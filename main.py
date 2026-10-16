@@ -14,7 +14,8 @@ para el sistema de mantenimiento predictivo de motores eléctricos.
 
 En esta primera versión analiza únicamente corriente y temperatura.
 Los valores válidos de entrada serán: corriente de 0 A a 5 A y
-temperatura de 0 °C a 110 °C.
+temperatura de 0 °C a 110 °C. Si alguna medición es exactamente 0,
+el sistema la tratará como posible error de sensor y recomendará revisarlo.
 
 Límites de clasificación:
 
@@ -77,7 +78,7 @@ TEMPERATURA_MAX = 110.0
 
 def solicitar_corriente():
     """
-    Solicita una corriente válida entre 0 y 3 A.
+    Solicita una corriente entre 0 y 5 A; una lectura cero se marca como posible error de medición.
     Repite la solicitud si el usuario comete un error.
     """
 
@@ -109,7 +110,7 @@ def solicitar_corriente():
 
 def solicitar_temperatura():
     """
-    Solicita una temperatura válida entre 0 y 110 °C.
+    Solicita una temperatura entre 0 y 110 °C; una lectura cero se marca como posible error de medición.
     Repite la solicitud si el usuario comete un error.
     """
 
@@ -301,6 +302,43 @@ def generar_recomendacion(estado_corriente, estado_temperatura):
 # ================================================================
 
 def analizar_motor(corriente, temperatura):
+    """Analiza las mediciones y detecta posibles lecturas de sensor en cero."""
+
+    # En este MVP, una lectura exactamente igual a cero se considera
+    # una posible falla de medición y no se clasifica como estado del motor.
+    if corriente == 0 or temperatura == 0:
+        variables_error = []
+
+        if corriente == 0:
+            variables_error.append("corriente (0 A)")
+        if temperatura == 0:
+            variables_error.append("temperatura (0 °C)")
+
+        return {
+            "corriente": corriente,
+            "temperatura": temperatura,
+            "estado_corriente": (
+                "Error de medición" if corriente == 0
+                else analizar_corriente(corriente)
+            ),
+            "estado_temperatura": (
+                "Error de medición" if temperatura == 0
+                else analizar_temperatura(temperatura)
+            ),
+            "estado_motor": "ERROR DE MEDICIÓN",
+            "nivel_riesgo": "NO DETERMINADO",
+            "alertas": [
+                "Se detectó una medición igual a cero en: "
+                + ", ".join(variables_error) + ".",
+                "La lectura podría deberse a un sensor desconectado, "
+                "una falla de comunicación o un componente que no responde."
+            ],
+            "recomendacion": (
+                "Revisar el sensor correspondiente, sus conexiones, la "
+                "alimentación y la comunicación antes de confiar en la medición. "
+                "Realizar una nueva lectura después de la revisión."
+            )
+        }
 
     estado_corriente = analizar_corriente(corriente)
     estado_temperatura = analizar_temperatura(temperatura)

@@ -36,4 +36,4 @@ Esta versión inicial presenta las siguientes limitaciones:
 - El análisis se limita a las variables de corriente y temperatura.
 - La clasificación del estado del motor se basa en límites predefinidos y no considera las características particulares de cada motor.
 
-Estas limitaciones podrán abordarse progresivamente en futuras versiones del proyecto.
+Estas limitaciones podrán abordarse progresivamente en futuras versiones del proyecto.# mantenimiento-predictivo-motores-mvp
